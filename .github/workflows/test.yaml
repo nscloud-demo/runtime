@@ -10,10 +10,15 @@ on:
       - docs/**
     branches:
       - main
-
+  workflow_dispatch:
+    
 jobs:
   validate:
-    runs-on: buildjet-4vcpu-ubuntu-2204
+    runs-on: 
+      - nscloud-ubuntu-22.04-amd64-4x16-with-cache
+      - nscloud-cache-size-10gb
+      - nscloud-cache-tag-acron-runtime
+      - nscloud-exp-runner-tool-cache-10gb
     steps:
       - uses: actions/checkout@v3
         with:
@@ -23,18 +28,19 @@ jobs:
           cache: false
           go-version: "1.21"
       - name: Setup Golang caches
-        uses: buildjet/cache@v3
+        uses: namespacelabs/nscloud-cache-action@v1
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-golang-
       - run: make validate-code
       - run: make build
   unit:
-    runs-on: buildjet-4vcpu-ubuntu-2204
+    runs-on: 
+      - nscloud-ubuntu-22.04-amd64-4x16-with-cache
+      - nscloud-cache-size-10gb
+      - nscloud-cache-tag-acron-runtime
+      - nscloud-exp-runner-tool-cache-10gb
     needs: validate
     steps:
       - uses: actions/checkout@v3
@@ -45,14 +51,11 @@ jobs:
           cache: false
           go-version: "1.21"
       - name: Setup Golang caches
-        uses: buildjet/cache@v3
+        uses: namespacelabs/nscloud-cache-action@v1
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-golang-
       - name: Run unit tests
         id: unit-test
         run: TEST_FLAGS="--junitfile unit-test-summary.xml" make unit
@@ -62,7 +65,11 @@ jobs:
         with:
           paths: unit-test-summary.xml
   integration:
-    runs-on: buildjet-4vcpu-ubuntu-2204
+    runs-on: 
+      - nscloud-ubuntu-22.04-amd64-4x16-with-cache
+      - nscloud-cache-size-10gb
+      - nscloud-cache-tag-acron-runtime
+      - nscloud-exp-runner-tool-cache-10gb
     needs: validate
     steps:
       - uses: actions/checkout@v3
@@ -73,17 +80,16 @@ jobs:
           cache: false
           go-version: "1.21"
       - name: Setup Golang caches
-        uses: buildjet/cache@v3
+        uses: namespacelabs/nscloud-cache-action@v1
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
-          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-golang-
-      - uses: debianmaster/actions-k3s@v1.0.5
-        with:
-          version: 'v1.27.2-k3s1'
+      - uses: azure/setup-kubectl@v3
+      - name: Start K3d Cluster
+        run: |
+          curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+          k3d cluster create acorn
       - run: make build
       - run: docker buildx install
       - run: make setup-ci-image
@@ -96,3 +102,9 @@ jobs:
         if: "!cancelled() && steps.integration-tests.conclusion != 'skipped'"
         with:
           paths: integration-test-summary.xml
+      - name: Breakpoint on failure
+        if: failure()
+        uses: namespacelabs/breakpoint-action@v0
+        with:
+          duration: 15m
+          authorized-users: edganiukov,hugosantos,n-g,htr,nichtverstehen,gmichelo

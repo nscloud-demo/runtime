@@ -88,7 +88,7 @@ jobs:
       - uses: azure/setup-kubectl@v3
       - uses: debianmaster/actions-k3s@v1.0.5
         with:
-          version: 'v1.27.2-k3s1'
+          version: 'v1.26.10+k3s1'
       - name: Breakpoint on failure
         if: failure()
         uses: namespacelabs/breakpoint-action@v0

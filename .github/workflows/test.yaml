@@ -89,6 +89,12 @@ jobs:
       - uses: debianmaster/actions-k3s@v1.0.5
         with:
           version: 'v1.27.2-k3s1'
+      - name: Breakpoint on failure
+        if: failure()
+        uses: namespacelabs/breakpoint-action@v0
+        with:
+          duration: 15m
+          authorized-users: edganiukov,hugosantos,n-g,htr,nichtverstehen,gmichelo
       - run: make build
       - run: docker buildx install
       - run: make setup-ci-image

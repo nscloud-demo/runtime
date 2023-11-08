@@ -23,6 +23,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
+          ref: '18493715cbae7d16c16e41919f64ba6e2313f69b'
       - uses: actions/setup-go@v4
         with:
           cache: false
@@ -46,6 +47,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
+          ref: '18493715cbae7d16c16e41919f64ba6e2313f69b'
       - uses: actions/setup-go@v4
         with:
           cache: false
@@ -75,6 +77,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 1
+          ref: '18493715cbae7d16c16e41919f64ba6e2313f69b'
       - uses: actions/setup-go@v4
         with:
           cache: false

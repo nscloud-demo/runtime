@@ -89,10 +89,9 @@ jobs:
             ~/.cache/go-build
             ~/go/pkg/mod
       - uses: azure/setup-kubectl@v3
-      - name: Start K3d Cluster
-        run: |
-          curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
-          k3d cluster create acorn
+      - uses: debianmaster/actions-k3s@v1.0.5
+        with:
+          version: 'v1.27.2-k3s1'
       - run: make build
       - run: docker buildx install
       - run: make setup-ci-image
